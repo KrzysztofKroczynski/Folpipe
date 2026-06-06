@@ -1,3 +1,8 @@
+---
+name: step-01-fetch-job
+description: Fetches the job posting URL and extracts structured requirements, responsibilities, and tech stack.
+---
+
 # Fetch job posting
 
 Retrieve the job posting from the URL provided as input and extract

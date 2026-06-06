@@ -1,3 +1,8 @@
+---
+name: step-01-ingest
+description: Reads documents from the input folder and collects them into a list for processing.
+---
+
 # Ingest documents
 
 Read the documents from the input folder and prepare them for processing.

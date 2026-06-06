@@ -1,3 +1,8 @@
+---
+name: sub-01-chunk
+description: Splits a single document into ~500-word chunks and writes them to output files.
+---
+
 # Chunk document
 
 Split a single document into manageable pieces ready for embedding.

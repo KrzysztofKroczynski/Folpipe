@@ -270,6 +270,51 @@ def _all_tool_dirs(pipeline_path: Path):
         pass
 
 
+_DOCS_DIR = Path(__file__).parent.parent.parent / "docs"
+
+
+def _get_topics() -> dict[str, Path]:
+    if not _DOCS_DIR.exists():
+        return {}
+    return {p.stem: p for p in sorted(_DOCS_DIR.glob("*.md"))}
+
+
+@main.command()
+@click.argument("topic", required=False, default=None)
+def docs(topic):
+    """Show documentation. Run without args to list topics.
+
+    \b
+    folpipe docs
+    folpipe docs getting-started
+    folpipe docs tools
+    folpipe docs pipeline-structure
+    """
+    topics = _get_topics()
+
+    if topic is None:
+        if not topics:
+            click.echo("No docs found.")
+            return
+        lines = ["Available topics:\n"]
+        for name in topics:
+            lines.append(f"  folpipe docs {name}")
+        click.echo("\n".join(lines))
+        return
+
+    if topic not in topics:
+        close = [t for t in topics if topic in t or t in topic]
+        msg = f"Unknown topic: {topic!r}."
+        if close:
+            msg += f" Did you mean: {', '.join(close)}?"
+        else:
+            msg += f" Run 'folpipe docs' for the list."
+        click.echo(msg, err=True)
+        sys.exit(1)
+
+    click.echo_via_pager(topics[topic].read_text(encoding="utf-8"))
+
+
 @main.command()
 @click.argument("pipeline_path", type=click.Path(exists=True))
 @click.option("--errors", is_flag=True, help="Show error report from last failed run")

@@ -1,3 +1,8 @@
+---
+name: cv-pipeline
+description: Creates a tailored CV and cover note for a specific job posting from a developer's profile files.
+---
+
 # CV pipeline
 
 This pipeline creates a tailored CV for a specific job posting.

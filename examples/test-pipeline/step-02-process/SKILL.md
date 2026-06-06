@@ -1,3 +1,8 @@
+---
+name: step-02-process
+description: Describe what this step does.
+---
+
 # step-02-process
 
 Describe what this step does and why it exists.

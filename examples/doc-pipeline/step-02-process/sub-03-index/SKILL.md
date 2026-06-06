@@ -1,3 +1,8 @@
+---
+name: sub-03-index
+description: Appends embedded chunk records for one document to the pipeline's search index.
+---
+
 # Index embedded chunks
 
 Add embedded chunks for one document to the pipeline's search index.

@@ -129,7 +129,8 @@ The runner checks that the model supports tool calling at startup. Hard stop wit
 | `can_goto` | no | Whitelist of step IDs the model may route to |
 | `terminal` | no | Pipeline ends when this step completes |
 | `human_input` | no | Pause for human input before running this step |
-| `self_reflection` | no | Override pipeline-level `self_reflection` for this step |
+| `self_reflection` | no | `true` (update SKILL.md), `"report"` (output only), `false` (off). Overrides pipeline-level setting. |
+| `context_budget_tokens` | no | Token budget for context injection (overrides pipeline-level setting) |
 
 ### can_goto
 
@@ -143,27 +144,32 @@ The runner validates `next` is in the whitelist. If the model omits it, the runn
 
 ### self_reflection
 
-When enabled, the runner makes one extra LLM call after a step that produced tool errors. The model reads its own SKILL.md and decides whether to append a note — guided entirely by its own instructions.
+When enabled, the runner makes one extra LLM call after a step completes. The model reviews the full conversation, follows its own `## Self-Reflection` instructions, and outputs the complete new SKILL.md content — or `NO_CHANGES`.
 
 ```yaml
-self_reflection: true   # opt-in globally (default: false)
+self_reflection: true     # opt-in globally, update mode (default: false)
+self_reflection: report   # opt-in globally, report mode
 
 steps:
   - id: step-01-ingest
     self_reflection: false   # opt this step out
 ```
 
-The step's SKILL.md controls what gets written and when — plain English:
+**Modes:**
+- `true` — model rewrites SKILL.md in place; copy saved to `output/<step_id>/reflection.md`
+- `"report"` — proposed new SKILL.md saved to `output/<step_id>/reflection.md` only; original unchanged
+
+The step's SKILL.md controls what the model looks for and writes — plain English:
 
 ```markdown
 ## Self-Reflection
 
-If any tool errors occurred, append a note under "## Lessons Learned"
+If any tool errors occurred, add a note under "## Lessons Learned"
 describing what went wrong and what to try differently next time.
 Keep it under five bullet points.
 ```
 
-The model outputs only the text to append, or nothing if no reflection is needed. If it writes something, the runner appends it to the step's SKILL.md (picked up on the next run) and saves a copy to `output/<step_id>/reflection.md`.
+During reflection the model also has access to `get_run_usage` (check token/cost totals) and `self_knowledge` (look up framework docs).
 
 ### dispatch
 
@@ -183,7 +189,14 @@ The instruction file a pipeline author writes. Read by the model at the start of
 
 ### Structure
 
+SKILL.md follows the [Anthropic SKILL.md standard](https://code.claude.com/docs/en/skills.md). YAML frontmatter is optional but recommended — the runner strips it before passing content to the model, so it's metadata only:
+
 ```markdown
+---
+name: step-01-ingest
+description: Reads documents from the input folder and collects them for processing.
+---
+
 # Step name
 
 One paragraph describing what this step does and why.

@@ -197,29 +197,39 @@ Tool resolution: sub-step tools override step tools which override pipeline tool
 
 ## Self-reflection
 
-When a step has tool errors, it can reflect on what went wrong and write a note to its own SKILL.md — which the runner reloads on the next run.
+After a step completes, the runner can make one extra LLM call where the model reviews the full conversation and rewrites its own SKILL.md. The SKILL.md controls what the model looks for and what it writes — plain English.
 
 Enable it in `pipeline.yaml`:
 
 ```yaml
-self_reflection: true   # global opt-in
+self_reflection: true     # global opt-in (update mode)
+self_reflection: report   # global opt-in (report mode — reads output only, SKILL.md unchanged)
 
 steps:
   - id: step-01-ingest
     self_reflection: false   # step-level override
 ```
 
+**Modes:**
+
+| Mode | Behaviour |
+|---|---|
+| `true` / `update` | Model rewrites SKILL.md in place. Output also saved to `output/<step_id>/reflection.md`. |
+| `report` | Model produces the proposed new SKILL.md but doesn't overwrite the original. Saved to `output/<step_id>/reflection.md` only. |
+
 Write the reflection behaviour in the step's SKILL.md:
 
 ```markdown
 ## Self-Reflection
 
-If any tool errors occurred, append a "## Lessons Learned" section
+If any tool errors occurred, add a "## Lessons Learned" section
 describing what failed and what path or approach to try instead.
 One bullet per distinct failure. Skip if there were no errors.
 ```
 
-After the step finishes, the runner sends the full conversation history back to the model. The model reads its own SKILL.md, decides if a note is warranted, and outputs only the text to append — or nothing. If it writes something, it lands in `output/<step_id>/reflection.md` and is appended to the step's SKILL.md for future runs.
+After the step finishes, the runner sends the full conversation history back to the model. The model reads its SKILL.md `## Self-Reflection` section, follows those instructions, and outputs the complete new SKILL.md content — or `NO_CHANGES` if nothing is needed. If it outputs content, the runner writes it to `output/<step_id>/reflection.md` and (in `update` mode) replaces the live SKILL.md so the next run picks it up.
+
+During reflection the model also has access to `get_run_usage` (token/cost totals) and `self_knowledge` (framework docs) if its instructions call for them.
 
 The step decides what to learn, when to learn it, and how to write it. All in English.
 

@@ -1,3 +1,8 @@
+---
+name: doc-pipeline
+description: Ingests documents, chunks and embeds them, and produces a searchable index.
+---
+
 # Document processing pipeline
 
 This pipeline ingests a set of documents, breaks them into searchable

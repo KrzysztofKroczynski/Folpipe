@@ -1,3 +1,8 @@
+---
+name: step-05-render-pdf
+description: Designs a polished two-column HTML CV and renders it to PDF via headless browser.
+---
+
 # Design and render CV as PDF
 
 Design a polished, visually distinctive CV as a self-contained HTML

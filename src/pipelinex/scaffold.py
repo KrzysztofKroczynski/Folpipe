@@ -55,7 +55,7 @@ model:
 #   base_url: https://my-endpoint.com/v1
 #   api_key: ${{MY_API_KEY}}
 
-# self_reflection: true   # opt-in: model appends lessons to its own SKILL.md after tool errors
+# self_reflection: true   # opt-in: after each step the model rewrites its own SKILL.md with lessons learned
 
 steps:
   - id: step-01-ingest
@@ -71,6 +71,11 @@ steps:
 """
 
 _GLOBAL_SKILL = """\
+---
+name: {name}
+description: Describe what this pipeline does in one sentence.
+---
+
 # {name}
 
 Describe what this pipeline does in one or two sentences.
@@ -88,11 +93,16 @@ Who uses this pipeline and what problem it solves.
 ## Tools available
 
 The built-in tools (read_file, write_file, write_state, web_search, http_request,
-run_script, extract_json, template, dispatch_task, ask_human) are always available.
-List any pipeline-level custom tools here so every step knows about them.
+run_script, extract_json, template, dispatch_task, ask_human, cancel_pipeline, self_knowledge)
+are always available. List any pipeline-level custom tools here so every step knows about them.
 """
 
 _STEP_SKILL = """\
+---
+name: {step_id}
+description: One sentence describing what this step does.
+---
+
 # {step_id}
 
 One sentence describing what this step does and why it exists.

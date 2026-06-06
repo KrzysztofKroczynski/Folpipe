@@ -120,9 +120,29 @@ template(
 Spawn an ad-hoc sub-task. See [Execution Patterns](execution-patterns.md#parallel-dispatch) for full details.
 
 ```
-dispatch_task(task="Summarise this document", skill="Be concise. Return plain text.")
+dispatch_task(task="Summarise this document", skill="Be concise. Return plain text.", name="summarise-doc")
 dispatch_task(task="Chunk intro-to-ml.txt", substep="sub-01-chunk", context={"filename": "intro-to-ml.txt", "content": "..."})
 ```
+
+| Parameter | Required | Description |
+|---|---|---|
+| `task` | yes | What the sub-task should do |
+| `substep` | no | Name of a sub-step folder inside the current step (loads its SKILL.md and tools) |
+| `skill` | no | Inline instructions for the sub-task (used when no `substep`) |
+| `name` | no | Short descriptive name for the ad-hoc agent (e.g. `"search-llm-basics"`). Used as its output directory name. Recommended for inline skill tasks. |
+| `context` | no | Extra data to pass to the sub-task |
+
+---
+
+### cancel_pipeline
+
+Immediately stop the pipeline run. The runner writes the reason to `output/cancelled.md` with a state snapshot.
+
+```
+cancel_pipeline(reason="Job description is in a language not supported by this pipeline.")
+```
+
+Use when continuing would produce meaningless output — e.g. required input is missing, the job is a complete mismatch, or a fatal error makes further steps pointless. Not for recoverable errors; use `When things go wrong` guidance in SKILL.md for those.
 
 ---
 
@@ -134,6 +154,21 @@ Pause and collect a human response via the console.
 ask_human(question="Should we proceed with the redacted version?")
 ask_human(question="Which output format?", context="Options: PDF, HTML, Markdown")
 ```
+
+---
+
+### self_knowledge
+
+Read folpipe framework documentation. Use to look up available tools, pipeline configuration, execution patterns, and best practices.
+
+```
+self_knowledge()                          # list all available topics
+self_knowledge(topic="tools")             # read the tools reference
+self_knowledge(topic="execution-patterns")
+self_knowledge(topic="context-management")
+```
+
+Available topics: `tools`, `pipeline-structure`, `state`, `execution-patterns`, `context-management`, `human-input`, `cli`, `getting-started`, `examples`.
 
 ---
 

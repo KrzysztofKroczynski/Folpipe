@@ -1,3 +1,8 @@
+---
+name: step-01-ingest
+description: Describe what this step does.
+---
+
 # step-01-ingest
 
 Describe what this step does and why it exists.

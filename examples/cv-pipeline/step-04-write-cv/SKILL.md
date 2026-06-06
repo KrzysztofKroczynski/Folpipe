@@ -1,3 +1,8 @@
+---
+name: step-04-write-cv
+description: Writes the tailored CV (cv.md) and cover note (cover-note.md) using the tailoring plan.
+---
+
 # Write CV
 
 Write the final CV using the tailoring plan from step-03.

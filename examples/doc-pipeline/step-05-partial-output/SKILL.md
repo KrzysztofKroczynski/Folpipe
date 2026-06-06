@@ -1,3 +1,8 @@
+---
+name: step-05-partial-output
+description: Produces output for documents that succeeded when some failed processing.
+---
+
 # Write partial output
 
 Some documents failed to process. Produce output for what succeeded.

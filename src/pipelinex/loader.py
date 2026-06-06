@@ -53,22 +53,32 @@ def load_pipeline(pipeline_path: Path) -> dict:
     return config
 
 
+def _strip_frontmatter(text: str) -> str:
+    if not text.startswith("---\n"):
+        return text
+    # Find closing marker: must be \n---\n or \n--- at end of file
+    m = re.search(r'\n---(\n|$)', text[3:])
+    if m:
+        return text[3 + m.end():].lstrip("\n")
+    return text
+
+
 def load_skill_md(pipeline_path: Path, step_id: str | None = None, substep_id: str | None = None) -> str:
     parts = []
 
     global_skill = pipeline_path / "SKILL.md"
     if global_skill.exists():
-        parts.append(global_skill.read_text(encoding="utf-8"))
+        parts.append(_strip_frontmatter(global_skill.read_text(encoding="utf-8")))
 
     if step_id:
         step_skill = pipeline_path / step_id / "SKILL.md"
         if step_skill.exists():
-            parts.append(step_skill.read_text(encoding="utf-8"))
+            parts.append(_strip_frontmatter(step_skill.read_text(encoding="utf-8")))
 
         if substep_id:
             substep_skill = pipeline_path / step_id / substep_id / "SKILL.md"
             if substep_skill.exists():
-                parts.append(substep_skill.read_text(encoding="utf-8"))
+                parts.append(_strip_frontmatter(substep_skill.read_text(encoding="utf-8")))
 
     return "\n\n---\n\n".join(parts)
 

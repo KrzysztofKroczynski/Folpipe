@@ -1,3 +1,8 @@
+---
+name: sub-02-embed
+description: Produces embedding records for a set of text chunks from one document.
+---
+
 # Embed chunks
 
 Produce embeddings for a set of text chunks from one document.

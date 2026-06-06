@@ -1,3 +1,8 @@
+---
+name: step-02-process
+description: Chunks, embeds, and indexes each document using parallel sub-step dispatch.
+---
+
 # Process documents
 
 Break each document into chunks, embed them, and index the results.

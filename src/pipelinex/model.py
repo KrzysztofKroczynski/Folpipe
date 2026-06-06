@@ -63,29 +63,27 @@ GET_RUN_USAGE_SCHEMA = {
     "name": "get_run_usage",
     "description": (
         "Return token and cost usage accumulated so far in this pipeline run. "
-        "Only available during self-reflection. Use when your SKILL.md instructs "
-        "you to check token or cost efficiency for this step."
+        "Only available during self-reflection. Use to check token or cost efficiency for this step."
     ),
     "parameters": {"type": "object", "properties": {}, "required": []},
 }
 
-READ_DOCS_SCHEMA = {
-    "name": "read_docs",
+SELF_KNOWLEDGE_SCHEMA = {
+    "name": "self_knowledge",
     "description": (
-        "Read a section of the folpipe PIPELINE_SPEC.md documentation. "
-        "Only available during self-reflection. Use it to look up framework "
-        "features, configuration options, and best practices before giving "
-        "improvement advice. Omit 'section' to get the table of contents."
+        "Read folpipe framework documentation. Use it to look up available tools, "
+        "pipeline configuration options, execution patterns, and best practices. "
+        "Omit 'topic' to list all available topics."
     ),
     "parameters": {
         "type": "object",
         "properties": {
-            "section": {
+            "topic": {
                 "type": "string",
                 "description": (
-                    "Heading to look up (e.g. 'model', 'context budget', "
-                    "'tools', 'routing', 'dispatch', 'self-reflection'). "
-                    "Omit to list all headings."
+                    "Documentation topic to read (e.g. 'tools', 'pipeline-structure', "
+                    "'context-management', 'execution-patterns', 'state', 'cli'). "
+                    "Omit to list all available topics."
                 ),
             }
         },

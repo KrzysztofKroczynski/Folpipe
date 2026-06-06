@@ -1,3 +1,8 @@
+---
+name: step-03-output
+description: Describe what this step does.
+---
+
 # step-03-output
 
 Describe what this step does and why it exists.

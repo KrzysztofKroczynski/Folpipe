@@ -8,9 +8,9 @@ from pathlib import Path
 from .context_mgr import ContextBudgetExceeded, build_context_prompt
 from .loader import load_pipeline, load_skill_md
 from .logger import PipelineLogger
-from .model import GET_RUN_USAGE_SCHEMA, READ_DOCS_SCHEMA, call_llm, check_tool_support, extract_text, extract_tool_calls, get_usage, reset_usage
+from .model import GET_RUN_USAGE_SCHEMA, SELF_KNOWLEDGE_SCHEMA, call_llm, check_tool_support, extract_text, extract_tool_calls, get_usage, reset_usage
 from .state import State
-from .tools.builtin import BUILTIN_NAMES, BUILTIN_SCHEMAS, BuiltinExecutor, PipelineCancelledError, Sandbox
+from .tools.builtin import BUILTIN_NAMES, BUILTIN_SCHEMAS, BuiltinExecutor, PipelineCancelledError, Sandbox, self_knowledge
 from .tools.executor import execute_custom_tool
 from .tools.resolver import install_tool_deps, resolve_tools
 
@@ -41,49 +41,6 @@ def _strip_reflection_section(text: str) -> str:
         return text[:m.start()].rstrip()
     return text
 
-
-def _find_pipeline_spec() -> Path | None:
-    p = Path.cwd()
-    for _ in range(5):
-        candidate = p / "PIPELINE_SPEC.md"
-        if candidate.exists():
-            return candidate
-        p = p.parent
-    candidate = Path(__file__).parent.parent.parent / "PIPELINE_SPEC.md"
-    if candidate.exists():
-        return candidate
-    return None
-
-
-def _read_docs_section(section: str) -> dict:
-    spec_path = _find_pipeline_spec()
-    if not spec_path:
-        return {"error": "PIPELINE_SPEC.md not found. Run folpipe from the repo root."}
-
-    content = spec_path.read_text(encoding="utf-8")
-
-    if not section:
-        headings = re.findall(r'^#{1,3} .+', content, re.MULTILINE)
-        return {"table_of_contents": "\n".join(headings)}
-
-    # Normalize underscores/hyphens to spaces so "context budget" matches "context_budget_tokens"
-    def _norm(s: str) -> str:
-        return re.sub(r'[_\-]', ' ', s).lower()
-
-    terms = _norm(section).split()
-    heading_re = re.compile(r'^(#{1,3}) (.+)$', re.MULTILINE)
-    m = next(
-        (hm for hm in heading_re.finditer(content) if all(t in _norm(hm.group(2)) for t in terms)),
-        None,
-    )
-    if not m:
-        return {"error": f"Section '{section}' not found. Call read_docs without a section argument to list all headings."}
-
-    level = len(m.group(1))
-    end_pattern = re.compile(rf'^#{{1,{level}}} ', re.MULTILINE)
-    end_m = end_pattern.search(content, m.end())
-    section_text = content[m.start(): end_m.start() if end_m else len(content)]
-    return {"content": section_text.strip()}
 
 
 class PipelineRunner:
@@ -479,7 +436,7 @@ class PipelineRunner:
 
         final_text = ""
         while True:
-            response = call_llm(model_cfg, reflection_messages, tools=[GET_RUN_USAGE_SCHEMA, READ_DOCS_SCHEMA])
+            response = call_llm(model_cfg, reflection_messages, tools=[GET_RUN_USAGE_SCHEMA, SELF_KNOWLEDGE_SCHEMA])
             text = extract_text(response).strip()
             tool_calls = extract_tool_calls(response)
 
@@ -491,8 +448,8 @@ class PipelineRunner:
             for tc in tool_calls:
                 if tc["name"] == "get_run_usage":
                     result = get_usage()
-                elif tc["name"] == "read_docs":
-                    result = _read_docs_section(tc["args"].get("section", ""))
+                elif tc["name"] == "self_knowledge":
+                    result = self_knowledge(tc["args"].get("topic", ""))
                 else:
                     result = {"error": f"Tool '{tc['name']}' not available during self-reflection"}
                 reflection_messages.append({

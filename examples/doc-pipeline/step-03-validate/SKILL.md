@@ -1,3 +1,8 @@
+---
+name: step-03-validate
+description: Checks that all processed chunk files exist and have content, then routes to output or partial-output.
+---
+
 # Validate output
 
 Check that the processed chunks are present and sensible before producing final output.

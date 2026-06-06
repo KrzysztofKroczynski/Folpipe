@@ -1,3 +1,8 @@
+---
+name: step-02-load-profile
+description: Reads all developer profile source files and saves a complete structured profile to state.
+---
+
 # Load developer profile
 
 Read all the developer's source files and build a complete picture

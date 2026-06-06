@@ -6,6 +6,25 @@ from fnmatch import fnmatch
 from pathlib import Path
 from typing import Any
 
+_DOCS_DIR = Path(__file__).parent.parent.parent.parent / "docs"
+
+
+def self_knowledge(topic: str) -> dict:
+    if not _DOCS_DIR.exists():
+        return {"error": "docs/ directory not found."}
+    topics = {p.stem: p for p in sorted(_DOCS_DIR.glob("*.md"))}
+    if not topic:
+        return {"topics": list(topics.keys())}
+    if topic in topics:
+        return {"content": topics[topic].read_text(encoding="utf-8")}
+    close = [t for t in topics if topic in t or t in topic]
+    msg = f"Unknown topic: {topic!r}."
+    if close:
+        msg += f" Did you mean: {', '.join(close)}?"
+    else:
+        msg += f" Available: {', '.join(topics)}."
+    return {"error": msg}
+
 
 class PipelineCancelledError(Exception):
     """Raised when the model calls cancel_pipeline. Carries the mandatory reason."""
@@ -244,6 +263,27 @@ BUILTIN_SCHEMAS = [
             "required": ["question"],
         },
     },
+    {
+        "name": "self_knowledge",
+        "description": (
+            "Read folpipe documentation. Use to look up framework features, "
+            "configuration options, and best practices. Omit 'topic' to list all topics."
+        ),
+        "parameters": {
+            "type": "object",
+            "properties": {
+                "topic": {
+                    "type": "string",
+                    "description": (
+                        "Documentation topic (e.g. 'tools', 'pipeline-structure', "
+                        "'context-management', 'execution-patterns', 'state', 'cli'). "
+                        "Omit to list all available topics."
+                    ),
+                }
+            },
+            "required": [],
+        },
+    },
 ]
 
 BUILTIN_NAMES = {s["name"] for s in BUILTIN_SCHEMAS}
@@ -274,6 +314,7 @@ class BuiltinExecutor:
             "template": self._template,
             "cancel_pipeline": self._cancel_pipeline,
             "ask_human": self._ask_human,
+            "self_knowledge": self._self_knowledge,
         }
         fn = handlers.get(name)
         if fn is None:
@@ -425,3 +466,6 @@ class BuiltinExecutor:
             return {"response": response}
         except (EOFError, KeyboardInterrupt):
             return {"error": "No human input available"}
+
+    def _self_knowledge(self, args: dict) -> dict:
+        return self_knowledge(args.get("topic", ""))

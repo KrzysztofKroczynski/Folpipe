@@ -1,3 +1,8 @@
+---
+name: step-04-output
+description: Writes the final index of all processed chunks as both Markdown and JSON.
+---
+
 # Write final output
 
 Produce the final pipeline output — a clean index of all processed chunks.
